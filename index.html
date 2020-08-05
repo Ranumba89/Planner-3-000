@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planner 3,000</title>
+    <script src="./jquery.js"></script>
+    <script src="./moment.js"></script>
+</head>
+
+<body>
+    <div style="text-align: center; background: cornsilk; ">
+        <div>
+            <h1>Planner 3,000</h1> 
+            <h2 class="current-date"></h2>
+        </div>
+        <table class="table">
+
+        </table>
+    </div>
+    <script>
+        function saveFunc() {
+            var strTime = $(this).attr('data-block-time');
+            var inputEl = $('#' + strTime);
+            var inpData = inputEl.val();
+            // update the localstorage
+            for (var index = 0; index < tasks.length; index++) {
+                var task = tasks[index];
+                if (task.time === strTime) {
+                    task.event = inpData;
+                    localStorage.setItem("PLANNER", JSON.stringify(tasks));
+                }
+            
+            }
+        }
+        function createTimeBlock(task) {
+            var strTime = task.time;
+
+            var rowEl = $("<tr>");
+
+            var blockTime = moment(strTime, "hh-a");
+
+            var inputEl = $("<input>");
+            inputEl.val(task.event);
+            inputEl.attr('id', strTime);
+
+            // color the hours.
+            if (blockTime.hour() < currentTime.hour()) {
+                // hours < current hour - gray,
+                inputEl.css("background", "lightgray");
+            } else if (blockTime.hour() > currentTime.hour()) {
+                // hours > current hour - green
+                inputEl.css("background", "lightgreen");
+            } else {
+                // the current hour - red
+                inputEl.css("background", "red");
+            }
+
+            var btn = $("<button>");
+            btn.css("background", "skyblue");
+            btn.text("Save");
+            btn.attr("data-block-time", strTime);
+            btn.on("click", saveFunc);
+
+            var tdTime = $("<td>");
+            var tdInp = $("<td>");
+            var tdBtn = $("<td>");
+
+            tdTime.append(task.time);
+            tdInp.append(inputEl);
+            tdBtn.append(btn);
+
+            rowEl.append(tdTime);
+            rowEl.append(tdInp);
+            rowEl.append(tdBtn);
+            $(".table").append(rowEl);
+
+        }
+
+
+        //Program starts here
+
+        //load planner from local storage
+        var planner = localStorage.getItem("PLANNER");
+        var tasks = JSON.parse(planner);
+
+        if (!tasks) {
+            var m = moment("08-am", "hh-a");
+            tasks = [];
+            for (let index = 0; index < 9; index++) {
+                m.add("h", 1);
+                var hr = m.format("hh-a");
+                var emptyTask = { time: hr, event: "" };
+                tasks.push(emptyTask);
+            }
+            localStorage.setItem("PLANNER", JSON.stringify(tasks));
+        }
+
+
+        var currentDateEl = $(".current-date");
+        var todaysDate = moment().format("dddd MMMM Do YYYY");
+        currentDateEl.text(todaysDate);
+
+
+        //Get current time using moment.js
+        var currentTime = moment(); //moment('12 pm','hh a');
+
+        //Build the business hours blocks from  9am t0 5pm
+        for (let index = 0; index < tasks.length; index++) {
+            var task = tasks[index];
+            createTimeBlock(task);
+        }
+    </script>
+</body>
+
+</html>
